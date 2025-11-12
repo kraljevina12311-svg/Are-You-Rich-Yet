@@ -304,7 +304,7 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
   <script>
     const connectBtn = document.getElementById('connectBtn');
     const disconnectBtn = document.getElementById('disconnectBtn');
@@ -320,6 +320,15 @@
 
     let currentPublicKey = null;
     let currentBalance = 0;
+
+    // RPC endpoints - besplatni javni endpointi
+    const RPC_ENDPOINTS = [
+      'https://go.getblock.io/aca34c3d34f947ef9c8eceb698098691',
+      'https://newest-cosmological-bush.solana-mainnet.quiknode.pro/bddb6938f588e3801241c0194796edb5dba45eb4/',
+      'https://sly-broken-cloud.solana-mainnet.quiknode.pro/a467251c1219f4b4ab55a1762dcc910fe3b8d3bf/',
+      'https://solana-mainnet.g.alchemy.com/v2/demo',
+      'https://api.devnet.solana.com' // devnet za testiranje
+    ];
 
     // Inline bs58 encode funkcija
     function base58Encode(buffer) {
@@ -409,19 +418,74 @@
       }
     }
 
-    async function getBalance(publicKey) {
-      try {
-        const connection = new solanaWeb3.Connection(
-          solanaWeb3.clusterApiUrl('mainnet-beta'),
-          'confirmed'
-        );
-        const balance = await connection.getBalance(new solanaWeb3.PublicKey(publicKey));
-        const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
-        return solBalance;
-      } catch (err) {
-        console.error('Error getting balance:', err);
-        return 0;
+    // Direktan JSON-RPC poziv bez Web3.js
+    async function getBalanceDirectRPC(publicKey, rpcUrl) {
+      const response = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'getBalance',
+          params: [publicKey]
+        })
+      });
+      
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error.message || 'RPC error');
       }
+      
+      return data.result.value / 1e9; // Lamports to SOL
+    }
+
+    async function getBalance(publicKey) {
+      console.log('Fetching balance for:', publicKey);
+      
+      // Probaj svaki RPC endpoint - prvo sa Web3.js, pa sa direktnim pozivom
+      for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+        try {
+          console.log(`Trying RPC endpoint ${i + 1}:`, RPC_ENDPOINTS[i]);
+          
+          // Metoda 1: Probaj sa Web3.js
+          try {
+            const connection = new solanaWeb3.Connection(
+              RPC_ENDPOINTS[i],
+              'confirmed'
+            );
+            
+            const pubKey = new solanaWeb3.PublicKey(publicKey);
+            console.log('PublicKey object created:', pubKey.toString());
+            
+            const balanceInLamports = await connection.getBalance(pubKey);
+            console.log('Balance in lamports:', balanceInLamports);
+            
+            const solBalance = balanceInLamports / solanaWeb3.LAMPORTS_PER_SOL;
+            console.log('Balance in SOL:', solBalance);
+            
+            return solBalance;
+          } catch (web3Error) {
+            console.log('Web3.js failed, trying direct RPC...');
+            // Metoda 2: Probaj direktan RPC poziv
+            const solBalance = await getBalanceDirectRPC(publicKey, RPC_ENDPOINTS[i]);
+            console.log('Direct RPC success! Balance in SOL:', solBalance);
+            return solBalance;
+          }
+        } catch (err) {
+          console.error(`RPC endpoint ${i + 1} failed:`, err.message);
+          
+          // Ako je ovo poslednji endpoint, vrati grešku
+          if (i === RPC_ENDPOINTS.length - 1) {
+            throw err;
+          }
+          // Inače probaj sledeći endpoint
+          continue;
+        }
+      }
+      
+      return 0;
     }
 
     connectBtn.onclick = async () => {
@@ -472,7 +536,15 @@
         localStorage.setItem('authToken', verifyData.token || '');
 
         // 5) Get balance
-        const balance = await getBalance(currentPublicKey);
+        let balance = 0;
+        try {
+          balance = await getBalance(currentPublicKey);
+          console.log('Successfully fetched balance:', balance);
+        } catch (balanceErr) {
+          console.error('Failed to fetch balance:', balanceErr);
+          showError('Wallet connected, but failed to fetch balance. Check console for details.');
+          // Continue anyway to show wallet info
+        }
 
         // Show results
         showLoading(false);
@@ -550,7 +622,15 @@
       if (provider && provider.isConnected && token) {
         try {
           currentPublicKey = provider.publicKey.toString();
-          const balance = await getBalance(currentPublicKey);
+          console.log('Auto-reconnecting wallet:', currentPublicKey);
+          
+          let balance = 0;
+          try {
+            balance = await getBalance(currentPublicKey);
+            console.log('Auto-reconnect balance:', balance);
+          } catch (balanceErr) {
+            console.error('Failed to fetch balance on reconnect:', balanceErr);
+          }
           
           connectSection.style.display = 'none';
           walletSection.classList.add('show');
@@ -558,6 +638,7 @@
           updateStatus(balance);
         } catch (err) {
           console.error('Error reconnecting:', err);
+          localStorage.removeItem('authToken');
         }
       }
     });
