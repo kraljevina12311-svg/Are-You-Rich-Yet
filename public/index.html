@@ -1,0 +1,566 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARE YOU RICH YET? 💸</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #F7FDF9 0%, #E6FBEF 100%);
+      color: #0A0A0A;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 194, 122, 0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .container {
+      background: white;
+      border-radius: 32px;
+      padding: 60px 40px;
+      box-shadow: 0 20px 80px rgba(0, 194, 122, 0.15);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      color: #00C27A;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 40px;
+      line-height: 1.5;
+    }
+
+    button {
+      background: #00C27A;
+      color: white;
+      border: none;
+      padding: 18px 40px;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 8px 24px rgba(0, 194, 122, 0.3);
+      width: 100%;
+    }
+
+    button:hover {
+      background: #00A969;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 194, 122, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .wallet-section {
+      display: none;
+      margin-top: 40px;
+    }
+
+    .wallet-section.show {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .balance-container {
+      background: linear-gradient(135deg, #E6FBEF 0%, #F7FDF9 100%);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 30px;
+    }
+
+    .balance-label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .balance-amount {
+      font-size: 56px;
+      font-weight: 800;
+      color: #00C27A;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 20px;
+      line-height: 1;
+    }
+
+    .status-message {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .status-emoji {
+      font-size: 48px;
+      margin-bottom: 15px;
+      display: block;
+      animation: bounce 2s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .address {
+      font-size: 12px;
+      color: #999;
+      font-family: 'Courier New', monospace;
+      margin-top: 20px;
+      word-break: break-all;
+      padding: 12px;
+      background: white;
+      border-radius: 12px;
+    }
+
+    .brag-btn {
+      background: #1DA1F2;
+      margin-top: 15px;
+    }
+
+    .brag-btn:hover {
+      background: #1a8cd8;
+      box-shadow: 0 12px 32px rgba(29, 161, 242, 0.4);
+    }
+
+    .disconnect-btn {
+      background: #f0f0f0;
+      color: #666;
+      margin-top: 10px;
+      padding: 12px 24px;
+      font-size: 14px;
+    }
+
+    .disconnect-btn:hover {
+      background: #e0e0e0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .loading {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      border: 3px solid #E6FBEF;
+      border-top: 3px solid #00C27A;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: #666;
+      font-style: italic;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 12px;
+      color: #999;
+      padding-top: 20px;
+      border-top: 1px solid #E6FBEF;
+    }
+
+    .error {
+      background: #ffe6e6;
+      color: #c62828;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 36px;
+      }
+      .balance-amount {
+        font-size: 42px;
+      }
+      .status-message {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💸 ARE YOU RICH YET?</h1>
+    <p class="subtitle">Connect your wallet and let's see if you're winning or coping.</p>
+
+    <div id="connectSection">
+      <button id="connectBtn">Connect Wallet</button>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Scanning your bags...</div>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="wallet-section" id="walletSection">
+      <div class="balance-container">
+        <div class="balance-label">Your SOL Balance</div>
+        <div class="balance-amount" id="balance">0.0000</div>
+        <span class="status-emoji" id="emoji">💰</span>
+        <div class="status-message" id="statusMessage">Calculating...</div>
+        <div class="address" id="address">-</div>
+      </div>
+
+      <button class="brag-btn" id="bragBtn">
+        🐦 Brag on X
+      </button>
+      <button class="disconnect-btn" id="disconnectBtn">
+        Disconnect
+      </button>
+    </div>
+
+    <div class="footer">
+      <div style="margin-bottom: 10px;">
+        <a href="https://twitter.com/areyourichyett" target="_blank" style="color: #00C27A; text-decoration: none; margin-right: 15px;">🐦 X/Twitter</a>
+        <a href="https://github.com/kraljevina12311-svg/Are-You-Rich-Yet" target="_blank" style="color: #00C27A; text-decoration: none;">💻 GitHub</a>
+      </div>
+      Powered by $RICH | Solana Meme Experiment
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script>
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    const bragBtn = document.getElementById('bragBtn');
+    const connectSection = document.getElementById('connectSection');
+    const walletSection = document.getElementById('walletSection');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const balanceEl = document.getElementById('balance');
+    const emojiEl = document.getElementById('emoji');
+    const statusMessageEl = document.getElementById('statusMessage');
+    const addressEl = document.getElementById('address');
+
+    let currentPublicKey = null;
+    let currentBalance = 0;
+
+    // Inline bs58 encode funkcija
+    function base58Encode(buffer) {
+      const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      const bytes = new Uint8Array(buffer);
+      
+      if (bytes.length === 0) return '';
+      
+      let digits = [0];
+      for (let i = 0; i < bytes.length; i++) {
+        let carry = bytes[i];
+        for (let j = 0; j < digits.length; j++) {
+          carry += digits[j] << 8;
+          digits[j] = carry % 58;
+          carry = (carry / 58) | 0;
+        }
+        while (carry > 0) {
+          digits.push(carry % 58);
+          carry = (carry / 58) | 0;
+        }
+      }
+      
+      // Handle leading zeros
+      for (let i = 0; bytes[i] === 0 && i < bytes.length - 1; i++) {
+        digits.push(0);
+      }
+      
+      return digits.reverse().map(d => ALPHABET[d]).join('');
+    }
+
+    async function requestNonce() {
+      const r = await fetch('/auth/nonce');
+      return r.json();
+    }
+
+    function getProvider() {
+      if (window.solana && window.solana.isPhantom) {
+        return window.solana;
+      }
+      return null;
+    }
+
+    function showError(message) {
+      error.textContent = message;
+      error.classList.add('show');
+      setTimeout(() => {
+        error.classList.remove('show');
+      }, 5000);
+    }
+
+    function showLoading(show) {
+      if (show) {
+        loading.classList.add('show');
+      } else {
+        loading.classList.remove('show');
+      }
+    }
+
+    function updateStatus(balance) {
+      currentBalance = balance;
+      balanceEl.textContent = balance.toFixed(4) + ' SOL';
+
+      if (balance < 0.01) {
+        emojiEl.textContent = '💀';
+        statusMessageEl.textContent = 'brokie';
+      } else if (balance < 0.1) {
+        emojiEl.textContent = '🥲';
+        statusMessageEl.textContent = 'noob';
+      } else if (balance < 0.5) {
+        emojiEl.textContent = '🚪';
+        statusMessageEl.textContent = 'Exit liquidity';
+      } else if (balance < 1) {
+        emojiEl.textContent = '🧒';
+        statusMessageEl.textContent = 'kiddie';
+      } else if (balance < 5) {
+        emojiEl.textContent = '📈';
+        statusMessageEl.textContent = 'trader';
+      } else if (balance < 10) {
+        emojiEl.textContent = '🗿';
+        statusMessageEl.textContent = 'chad';
+      } else if (balance < 50) {
+        emojiEl.textContent = '🧠';
+        statusMessageEl.textContent = 'professional trader';
+      } else {
+        emojiEl.textContent = '🏴‍☠️';
+        statusMessageEl.textContent = 'RUGGER';
+      }
+    }
+
+    async function getBalance(publicKey) {
+      try {
+        const connection = new solanaWeb3.Connection(
+          solanaWeb3.clusterApiUrl('mainnet-beta'),
+          'confirmed'
+        );
+        const balance = await connection.getBalance(new solanaWeb3.PublicKey(publicKey));
+        const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
+        return solBalance;
+      } catch (err) {
+        console.error('Error getting balance:', err);
+        return 0;
+      }
+    }
+
+    connectBtn.onclick = async () => {
+      const provider = getProvider();
+      
+      if (!provider) {
+        showError('Phantom wallet nije instaliran! Instaliraj ga sa phantom.app');
+        setTimeout(() => {
+          window.open('https://phantom.app', '_blank');
+        }, 1000);
+        return;
+      }
+
+      try {
+        connectBtn.disabled = true;
+        showLoading(true);
+
+        // 1) Get nonce
+        const { nonce } = await requestNonce();
+
+        // 2) Connect wallet
+        const resp = await provider.connect();
+        currentPublicKey = resp.publicKey.toString();
+
+        // 3) Sign message
+        const message = `Login to Phantom Auth App\n\nNonce: ${nonce}`;
+        const encodedMessage = new TextEncoder().encode(message);
+        const signed = await provider.signMessage(encodedMessage, 'utf8');
+        const signatureBase58 = base58Encode(signed.signature);
+
+        // 4) Verify on server
+        const verifyResp = await fetch('/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            publicKey: currentPublicKey, 
+            message, 
+            signature: signatureBase58 
+          })
+        });
+
+        const verifyData = await verifyResp.json();
+        if (!verifyData.ok) {
+          throw new Error(verifyData.error || 'Verification failed');
+        }
+
+        // Store token
+        localStorage.setItem('authToken', verifyData.token || '');
+
+        // 5) Get balance
+        const balance = await getBalance(currentPublicKey);
+
+        // Show results
+        showLoading(false);
+        connectSection.style.display = 'none';
+        walletSection.classList.add('show');
+        
+        addressEl.textContent = currentPublicKey;
+        updateStatus(balance);
+
+        // Play sound if rich (optional)
+        if (balance >= 1) {
+          console.log('🎉 You\'re rich!');
+        }
+
+      } catch (err) {
+        console.error(err);
+        showError('Error: ' + (err.message || err));
+        connectBtn.disabled = false;
+        showLoading(false);
+      }
+    };
+
+    bragBtn.onclick = () => {
+      let statusText = '';
+      let rank = '';
+      
+      if (currentBalance < 0.01) {
+        rank = 'brokie 💀';
+      } else if (currentBalance < 0.1) {
+        rank = 'noob 🥲';
+      } else if (currentBalance < 0.5) {
+        rank = 'Exit liquidity 🚪';
+      } else if (currentBalance < 1) {
+        rank = 'kiddie 🧒';
+      } else if (currentBalance < 5) {
+        rank = 'trader 📈';
+      } else if (currentBalance < 10) {
+        rank = 'chad 🗿';
+      } else if (currentBalance < 50) {
+        rank = 'professional trader 🧠';
+      } else {
+        rank = 'RUGGER 🏴‍☠️';
+      }
+
+      statusText = `I just checked my wallet and I'm a ${rank}\n${currentBalance.toFixed(4)} SOL\n\nAre you rich yet? 💸\n\n@areyourichyett\n#Solana #RICH`;
+
+      const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(statusText)}`;
+      window.open(tweetUrl, '_blank');
+    };
+
+    disconnectBtn.onclick = async () => {
+      const provider = getProvider();
+      if (provider) {
+        try {
+          await provider.disconnect();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      currentPublicKey = null;
+      currentBalance = 0;
+      localStorage.removeItem('authToken');
+
+      walletSection.classList.remove('show');
+      connectSection.style.display = 'block';
+      connectBtn.disabled = false;
+    };
+
+    // Check if already connected on load
+    window.addEventListener('load', async () => {
+      const provider = getProvider();
+      const token = localStorage.getItem('authToken');
+      
+      if (provider && provider.isConnected && token) {
+        try {
+          currentPublicKey = provider.publicKey.toString();
+          const balance = await getBalance(currentPublicKey);
+          
+          connectSection.style.display = 'none';
+          walletSection.classList.add('show');
+          addressEl.textContent = currentPublicKey;
+          updateStatus(balance);
+        } catch (err) {
+          console.error('Error reconnecting:', err);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
